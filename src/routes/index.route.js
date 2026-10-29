@@ -1,11 +1,15 @@
- import express from "express"
+import express from "express";
 
 //  hotel router
-import HotelRoute from "./HotelRoutes/HotelAuth.route.js"
+import HotelRoute from "./HotelRoutes/HotelAuth.route.js";
 
- const IndexRouter = express.Router()
+// admin auth route
+import AdminAuthRoute from "./AdminRoutes/SuperAdminAuth.route.js";
 
+const IndexRouter = express.Router();
 
- IndexRouter.use("/hotel" , HotelRoute)
+IndexRouter.use("/hotel", HotelRoute);
 
- export default IndexRouter
+IndexRouter.use("/superadmin", AdminAuthRoute);
+
+export default IndexRouter;
