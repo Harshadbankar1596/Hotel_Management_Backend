@@ -120,7 +120,7 @@ const SuperAdminAuthController = {
           $set: {
             tokenHash,
             expiresAt: new Date(decodedToken.exp * 1000),
-            revokedAt: null,
+            revokedAt: new Date(),
           },
         },
         {
@@ -146,6 +146,7 @@ const SuperAdminAuthController = {
       return ErrorLog(res, error, "error in login superadmin");
     }
   },
+  
   Refresh: async (req, res) => {
     try {
       const payload = req.refreshTokenPayload;
@@ -154,25 +155,6 @@ const SuperAdminAuthController = {
 
       if (!payload?.sub || !oldSession || !oldToken) {
         return ResponseLog(res, 401, "Invalid refresh session");
-      }
-
-      const revokedSession = await Session.findOneAndUpdate(
-        {
-          _id: oldSession._id,
-          userId: payload.sub,
-          userModel: "superadmin",
-          tokenHash: crypto.createHash("sha256").update(oldToken).digest("hex"),
-          revokedAt: null,
-          expiresAt: { $gt: new Date() },
-        },
-        {
-          $set: { revokedAt: new Date() },
-        },
-        { new: true },
-      );
-
-      if (!revokedSession) {
-        return ResponseLog(res, 401, "Refresh token already used or revoked");
       }
 
       const SuperAdmin = await SuperAdminModel.findById(payload.sub).select(
@@ -197,12 +179,31 @@ const SuperAdminAuthController = {
         .update(RefreshToken)
         .digest("hex");
 
-      await Session.create({
-        userId: SuperAdmin._id,
-        userModel: "superadmin",
-        tokenHash,
-        expiresAt: new Date(decodedToken.exp * 1000),
-      });
+      const expiresAt = new Date(decodedToken.exp * 1000);
+
+      const session = await Session.findOneAndUpdate(
+        {
+          _id: oldSession._id,
+          userId: SuperAdmin._id,
+          userModel: "superadmin",
+          expiresAt: { $gt: new Date() },
+        },
+        {
+          $set: {
+            tokenHash,
+            expiresAt,
+            revokedAt: new Date(),
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
+
+      if (!session) {
+        return ResponseLog(res, 401, "Refresh session already used or expired");
+      }
 
       const tokenName =
         process.env.SUPER_ADMIN_TOKEN_NAME || "superadmin_token_r";
