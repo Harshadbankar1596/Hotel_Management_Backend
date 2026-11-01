@@ -78,18 +78,6 @@ const HotelSchema = new mongoose.Schema(
       index: true,
     },
 
-    // subscriptionId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "Subscription",
-    //   default: null,
-    // },
-
-    // createdBy: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "User",
-    //   required: true,
-    // },
-
     isDeleted: {
       type: Boolean,
       default: false,

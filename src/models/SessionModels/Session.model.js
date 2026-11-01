@@ -8,11 +8,11 @@ const SessionSchema = new mongoose.Schema(
       required: true,
     },
 
-    userModel: {
-      type: String,
-      required: true,
-      enum: ["superadmin", "admin", "user"],
-    },
+    // userModel: {
+    //   type: String,
+    //   required: true,
+    //   enum: ["superadmin", "admin", "user"],
+    // },
 
     tokenHash: {
       type: String,
@@ -35,7 +35,7 @@ const SessionSchema = new mongoose.Schema(
   }
 );
 
-SessionSchema.index({ userId: 1, userModel: 1 });
+SessionSchema.index({ userId: 1 });
 SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Session", SessionSchema);

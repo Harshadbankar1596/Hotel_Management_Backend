@@ -1,11 +1,9 @@
-next -> check superadminauth middleware and validate craete hotel controller and model
-        duplicate hotel add nahi hona cahiye hotelme ek key add karo branchcount
-
-
-
+next -> check user auth proper
 
 
 
 feauture planing
-1 -> hotel admin asel tyala hotel through add kele jayil 
-   admin branch add karushakto branch-admin add karusakto then  
+1 ->  branch add karnahe admin karega
+2 -> admin waiter and branch admin aad karega
+3 -> email service add karnihe otp keliye
+4 -> cloudinary setup

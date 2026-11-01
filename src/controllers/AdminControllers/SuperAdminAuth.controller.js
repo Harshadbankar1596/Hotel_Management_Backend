@@ -114,7 +114,6 @@ const SuperAdminAuthController = {
       await Session.findOneAndUpdate(
         {
           userId: SuperAdmin._id,
-          userModel: "superadmin",
         },
         {
           $set: {
@@ -129,6 +128,7 @@ const SuperAdminAuthController = {
           runValidators: true,
         },
       );
+      
       let tokenName =
         process.env.SUPER_ADMIN_TOKEN_NAME || "superadmin_token_r";
 
@@ -185,7 +185,6 @@ const SuperAdminAuthController = {
         {
           _id: oldSession._id,
           userId: SuperAdmin._id,
-          userModel: "superadmin",
           expiresAt: { $gt: new Date() },
         },
         {
