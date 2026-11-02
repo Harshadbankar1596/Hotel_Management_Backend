@@ -14,8 +14,8 @@ import {
 import {
   GenerateAccessToken,
   GenerateRefreshToken,
-} from "../../utils/RefreshToken/token.js";
-import { SetCookie } from "../../utils/cookie.js";
+} from "../../helper/RefreshToken/token.js";
+import { SetCookie } from "../../helper/cookie.js";
 import Session from "../../models/SessionModels/Session.model.js";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
@@ -195,6 +195,78 @@ const UserAuthController = {
       });
     } catch (error) {
       return ErrorLog(res, error, "error in login user");
+    }
+  },
+
+  Refresh: async (req, res) => {
+    try {
+      const payload = req.refreshTokenPayload;
+      const oldSession = req.refreshSession;
+      const oldToken = req.refreshToken;
+
+      if (!payload.sub || !oldSession || !oldToken) {
+        return ResponseLog(res, 401, "Invalid Resfresh Token");
+      }
+
+      const User = await UserModel.findById(payload.sub)
+        .select("_id role")
+        .lean();
+
+      if (!User) {
+        return ResponseLog(res, 401, "User Not Found");
+      }
+
+      const RefreshToken = GenerateRefreshToken(User);
+      const AccessToken = GenerateAccessToken(User);
+
+      const decodedToken = jwt.decode(RefreshToken);
+      if (!decodedToken?.exp) {
+        return ResponseLog(res, 500, "Invalid refresh token expiry");
+      }
+
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(RefreshToken)
+        .digest("hex");
+
+      const expiresAt = new Date(decodedToken.exp * 1000);
+
+      const session = await Session.findOneAndUpdate(
+        {
+          _id: oldSession._id,
+          userId: User._id,
+          expiresAt: { $gt: new Date() },
+        },
+        {
+          $set: {
+            tokenHash,
+            expiresAt,
+            revokedAt: new Date(),
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
+
+      if (!session) {
+        return ResponseLog(res, 401, "Refresh session already used or expired");
+      }
+
+      const tokenName = process.env.USER_TOKEN_NAME || "user_token_r";
+
+      SetCookie(res, tokenName, RefreshToken);
+
+      return SuccessLog(res, 200, "Token refreshed successfully", {
+        AccessToken,
+        User: {
+          _id: User._id,
+          role: User.role,
+        },
+      });
+    } catch (error) {
+      return ErrorLog(res, error, "Failed to refresh token");
     }
   },
 };

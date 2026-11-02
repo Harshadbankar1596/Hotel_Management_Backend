@@ -9,11 +9,26 @@ import {
   ValidateEmail,
   ValidatePhone,
 } from "../../helper/Validator/validator.js";
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../../utils/cloudinary.utils.js";
 
 const HotelAuthController = {
   CreateHotel: async (req, res) => {
     try {
       const { name, email, phone, address, logo, ownerName } = req.body;
+
+      const image = req.file
+        ? await uploadToCloudinary(req.file, "logo")
+        : null;
+
+      const deletImage = await deleteFromCloudinary(image?.public_id);
+      if(deletImage){
+        console.log("image deleted🟢 : " , image)
+      }else{
+        console.log("error in delete image🔴")
+      }
 
       let validData = ValidateBody(
         ["name", "email", "phone", "ownerName"],
@@ -47,7 +62,7 @@ const HotelAuthController = {
         email,
         phone,
         address,
-        logo,
+        logo: image?.url || "",
         ownerName,
       });
 

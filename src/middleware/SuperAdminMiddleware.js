@@ -4,7 +4,7 @@ import {
 } from "../helper/GlobalResponseHandler/Response.js";
 
 import SuperAdminModel from "../models/AdminModels/SuperAdmin.model.js";
-import { VerifyAccessToken } from "../utils/RefreshToken/token.js";
+import { VerifyAccessToken } from "../helper/RefreshToken/token.js";
 
 async function SuperAdminAuth(req, res, next) {
   try {

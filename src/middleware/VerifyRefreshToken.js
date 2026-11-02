@@ -1,15 +1,14 @@
 import crypto from "node:crypto";
-import { VerifyRefreshToken } from "../utils/RefreshToken/token.js";
+import { VerifyRefreshToken } from "../helper/RefreshToken/token.js";
 import Session from "../models/SessionModels/Session.model.js";
 import {
   ResponseLog,
   ErrorLog,
 } from "../helper/GlobalResponseHandler/Response.js";
-import { ClearCookie } from "../utils/cookie.js";
+import { ClearCookie } from "../helper/cookie.js";
 
 const VerifyRefreshTokenMiddleware = async (req, res, next) => {
-  const tokenName =
-    process.env.SUPER_ADMIN_TOKEN_NAME || "superadmin_token_r";
+  const tokenName = process.env.SUPER_ADMIN_TOKEN_NAME || "superadmin_token_r";
 
   try {
     const refreshToken = req.cookies?.[tokenName];
@@ -32,7 +31,6 @@ const VerifyRefreshTokenMiddleware = async (req, res, next) => {
 
     const session = await Session.findOne({
       userId: decoded.sub,
-      userModel: "superadmin",
       tokenHash,
       expiresAt: { $gt: new Date() },
     });

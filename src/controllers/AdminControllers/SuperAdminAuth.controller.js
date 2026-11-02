@@ -15,8 +15,8 @@ import {
 import {
   GenerateAccessToken,
   GenerateRefreshToken,
-} from "../../utils/RefreshToken/token.js";
-import { SetCookie } from "../../utils/cookie.js";
+} from "../../helper/RefreshToken/token.js";
+import { SetCookie } from "../../helper/cookie.js";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import Session from "../../models/SessionModels/Session.model.js";
