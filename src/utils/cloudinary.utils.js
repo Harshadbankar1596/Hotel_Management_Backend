@@ -1,34 +1,50 @@
 import cloudinary from "../config/cloudinary/cloudinary.js";
 import { Readable } from "stream";
 
-export const uploadToCloudinary = (file, folder = "hotel-management") => {
-  return new Promise((resolve, reject) => {
+export const uploadToCloudinary = async (file, folder = "menu-items") => {
+  try {
     if (!file?.buffer) {
-      return reject(new Error("File is required"));
+      throw new Error("Image file is required");
     }
 
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "image",
-      },
-      (error, result) => {
-        if (error) return reject(error);
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: "image",
+          transformation: [
+            {
+              width: 300,
+              height: 300,
+              crop: "limit",
+              quality: "auto:low",
+              fetch_format: "webp",
+              flags: "strip_profile",
+            },
+          ],
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
 
-        resolve({
-          url: result.secure_url,
-          public_id: result.public_id,
-          format: result.format,
-          width: result.width,
-          height: result.height,
-          bytes: result.bytes,
-        });
-      },
-    );
+      Readable.from(file.buffer).pipe(stream);
+    });
 
-    Readable.from(file.buffer).pipe(stream);
-  });
+    return {
+      url: result.secure_url,
+      public_id: result.public_id,
+      format: result.format,
+      bytes: result.bytes,
+      width: result.width,
+      height: result.height,
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
+
 
 export const deleteFromCloudinary = async (publicId) => {
   if (!publicId) {

@@ -54,11 +54,7 @@ const HotelBranchSchema = new mongoose.Schema(
         trim: true,
         default: "",
       },
-      country: {
-        type: String,
-        trim: true,
-        default: "India",
-      },
+     
       pincode: {
         type: String,
         trim: true,
@@ -66,10 +62,6 @@ const HotelBranchSchema = new mongoose.Schema(
       },
     },
 
-    logo: {
-      type: String,
-      default: null,
-    },
 
     status: {
       type: String,

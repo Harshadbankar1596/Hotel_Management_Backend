@@ -17,8 +17,12 @@ import {
 } from "../../helper/RefreshToken/token.js";
 import { SetCookie } from "../../helper/cookie.js";
 import Session from "../../models/SessionModels/Session.model.js";
+import OtpModel from "../../models/UserModels/otp.model.js";
 import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
+import otpTemplate from "../../utils/otpTemplate.js";
+import sendEmail from "../../utils/sendEmail.js";
+import { randomInt } from "crypto";
 
 const UserAuthController = {
   RegisterUser: async (req, res) => {
@@ -61,6 +65,15 @@ const UserAuthController = {
 
       if (!hotel) {
         return ResponseLog(res, 404, "Hotel Not Found or Inactive");
+      }
+
+      const branch = await HotelBranchModel.findOne({
+        _id: branchId,
+        hotelId: hotelId,
+      });
+
+      if (!branch) {
+        return ResponseLog(res, 404, "Branch Not Found");
       }
 
       if (["branchadmin", "waiter"].includes(normalizedRole) && !branchId) {
@@ -134,17 +147,21 @@ const UserAuthController = {
         return ResponseLog(res, 400, validEmail.message);
       }
 
-      // otp verify logic here
-      const staticOtp = 1234;
-
-      if (otp !== staticOtp) {
-        return ResponseLog(res, 400, "Invalid OTP");
-      }
-
       const User = await UserModel.findOne({ email }).lean();
 
       if (!User) {
         return Response(res, 401, "User Not Found");
+      }
+
+      // otp verify logic here
+      const validOpt = await OtpModel.findOne({
+        otp,
+        userId: User._id,
+        expire: { $gt: new Date() },
+      });
+
+      if (!validOpt) {
+        return ResponseLog(res, 400, "Invalid or expired OTP");
       }
 
       let RefreshToken = GenerateRefreshToken(User);
@@ -184,6 +201,7 @@ const UserAuthController = {
           runValidators: true,
         },
       );
+      await OtpModel.findByIdAndDelete(validOpt._id);
 
       let TokenName = process.env.USER_TOKEN_NAME || "user_token_r";
 
@@ -195,6 +213,59 @@ const UserAuthController = {
       });
     } catch (error) {
       return ErrorLog(res, error, "error in login user");
+    }
+  },
+
+  SendOtp: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      const validBody = ValidateBody(["email"], req.body);
+      if (!validBody.isValid) {
+        return ResponseLog(res, 400, validBody.message);
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+
+      const user = await UserModel.findOne({ email: normalizedEmail })
+        .select("_id email")
+        .lean();
+
+      if (!user) {
+        return ResponseLog(res, 404, "User Not Found");
+      }
+
+      const newOtp = randomInt(1000, 10000).toString();
+      const expire = new Date(Date.now() + 5 * 60 * 1000);
+
+      const otp = await OtpModel.findOneAndUpdate(
+        { userId: user._id },
+        {
+          otp: newOtp,
+          expire,
+        },
+        {
+          upsert: true,
+          new: true,
+          runValidators: true,
+          setDefaultsOnInsert: true,
+        },
+      );
+
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Your OTP Verification Code",
+          html: otpTemplate(newOtp),
+        });
+      } catch (error) {
+        await OtpModel.findByIdAndDelete(otp._id);
+        throw error;
+      }
+
+      return SuccessLog(res, 200, "OTP sent to your email");
+    } catch (error) {
+      return ErrorLog(res, error, "Error in sending OTP");
     }
   },
 

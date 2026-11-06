@@ -2,11 +2,13 @@
 import "dotenv/config";
 import app from "./src/app.js";
 import ConnectDB from "./src/db/DB.js";
+import transporter from "./src/config/nodemaile/nodemailer.js"
 
 const PORT = process.env.PORT || 5000;
 
 let server;
-
+await transporter.verify();
+console.log("SMTP Server Connected Successfully");
 const StartServer = async () => {
   try {
     await ConnectDB();
