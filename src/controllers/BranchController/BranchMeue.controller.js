@@ -1,4 +1,4 @@
-import BranchMenuModel from "../../models/BranchMenueModels/BranchItem.model.js";
+import BranchMenuModel from "../../models/BranchModels/BranchItem.model.js";
 import HotelModel from "../../models/HotelModels/Hotel.model.js";
 import BranchModel from "../../models/BranchModels/branch.model.js";
 import {
@@ -65,9 +65,13 @@ const BranchMenueController = {
       if (req.file) {
         uploadedImage = await uploadToCloudinary(req.file, "menu-items");
       }
+
+
+      // remove  this condition in production
       if (uploadedImage?.public_id) {
         await deleteFromCloudinary(uploadedImage.public_id).catch(() => {});
       }
+
 
       const itemObj = {
         itemName: FoodItem.itemName,

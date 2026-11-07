@@ -71,3 +71,40 @@ export const ValidatePhone = (phone) => {
     message: "Valid phone number",
   };
 };
+
+
+
+export const ValidateEnum = (fields = {}, body = {}) => {
+  const invalidFields = Object.entries(fields)
+    .filter(([key, allowedValues]) => {
+      return (
+        body[key] !== undefined &&
+        body[key] !== null &&
+        !allowedValues.includes(body[key])
+      );
+    })
+    .map(([key, allowedValues]) => ({
+      field: key,
+      value: body[key],
+      allowedValues,
+    }));
+
+  if (invalidFields.length) {
+    return {
+      isValid: false,
+      message: invalidFields
+        .map(
+          ({ field, allowedValues }) =>
+            `Invalid ${field}. Allowed values: ${allowedValues.join(", ")}`
+        )
+        .join("; "),
+      invalidFields,
+    };
+  }
+
+  return {
+    isValid: true,
+    message: "Validation successful",
+    invalidFields: [],
+  };
+};

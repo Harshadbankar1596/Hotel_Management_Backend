@@ -11,3 +11,8 @@ feauture planing🟢
 
 nex ->🟢
 1 -> difrrent branch have a her own menue🟢
+
+2 -> craete Configs branch wise🟢
+3 -> create table archetechture 
+4 -> create order and kot
+5 -> bill
