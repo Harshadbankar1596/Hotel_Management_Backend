@@ -6,5 +6,6 @@ import PermissionAuth from "../../middleware/Permission.middleware.js"
 const route = express.Router()
 
 route.post("/add" , UserAuth , PermissionAuth , TableController.addTable)
+route.get("/get-table/:hotelId/:branchId" , UserAuth , TableController.getTable)
 
 export default route

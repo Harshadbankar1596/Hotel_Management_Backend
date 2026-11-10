@@ -1,4 +1,3 @@
-
 import mongoose from "mongoose";
 import TableModel from "../../models/BranchModels/Table.model.js";
 import HotelModel from "../../models/HotelModels/Hotel.model.js";
@@ -17,7 +16,7 @@ const TableController = {
 
       const validBody = ValidateBody(
         ["hotelId", "branchId", "tables"],
-        req.body
+        req.body,
       );
 
       if (!validBody.isValid) {
@@ -53,7 +52,7 @@ const TableController = {
         return ResponseLog(
           res,
           400,
-          "This branch does not belong to this hotel"
+          "This branch does not belong to this hotel",
         );
       }
 
@@ -67,11 +66,7 @@ const TableController = {
           !Number.isInteger(Number(table.floorNo)) ||
           Number(table.floorNo) < 1
         ) {
-          return ResponseLog(
-            res,
-            400,
-            "Invalid tableName, tableNo or floorNo"
-          );
+          return ResponseLog(res, 400, "Invalid tableName, tableNo or floorNo");
         }
 
         const tableNo = Number(table.tableNo);
@@ -80,7 +75,7 @@ const TableController = {
           return ResponseLog(
             res,
             400,
-            `Duplicate table number ${tableNo} in request`
+            `Duplicate table number ${tableNo} in request`,
           );
         }
 
@@ -94,7 +89,7 @@ const TableController = {
 
       if (existingDocument) {
         const existingNumbers = new Set(
-          existingDocument.Tables.map((table) => table.tableNo)
+          existingDocument.Tables.map((table) => table.tableNo),
         );
 
         for (const table of tables) {
@@ -102,7 +97,7 @@ const TableController = {
             return ResponseLog(
               res,
               409,
-              `Table number ${table.tableNo} already exists`
+              `Table number ${table.tableNo} already exists`,
             );
           }
         }
@@ -115,7 +110,7 @@ const TableController = {
           res,
           200,
           "Tables added successfully",
-          existingDocument
+          existingDocument,
         );
       }
 
@@ -125,18 +120,51 @@ const TableController = {
         Tables: tables,
       });
 
-      return SuccessLog(
-        res,
-        201,
-        "Tables created successfully",
-        newDocument
-      );
+      return SuccessLog(res, 201, "Tables created successfully", newDocument);
     } catch (error) {
       ErrorLog(res, error, "Error in add table");
     }
   },
 
-  
+  getTable: async (req, res) => {
+    try {
+      const { hotelId, branchId } = req.params;
+
+      const validBody = ValidateBody(["hotelId", "branchId"], req.params);
+      if (!validBody.isValid) {
+        return ResponseLog(res, 400, validBody.message);
+      }
+
+      if (!mongoose.isValidObjectId(hotelId)) {
+        return ResponseLog(res, 400, "invalid hotelId");
+      }
+      if (!mongoose.isValidObjectId(branchId)) {
+        return ResponseLog(res, 400, "invalid branch id");
+      }
+
+      const [Hotel, Branch] = await Promise.all([
+        HotelModel.exists({ _id: hotelId }),
+        BranchModel.exists({ _id: branchId }),
+      ]);
+
+      if (!Hotel) {
+        return ResponseLog(res, 404, "Hotel not found");
+      }
+      if (!Branch) {
+        return ResponseLog(res, 404, "Branch Not Found");
+      }
+
+      const Table =
+        (await TableModel.findOne({
+          branchId,
+          hotelId,
+        })) || [];
+
+      SuccessLog(res, 200, Table);
+    } catch (error) {
+      ErrorLog(res, error, "error in get table");
+    }
+  },
 };
 
 export default TableController;
