@@ -9,7 +9,7 @@ feauture planing🟢
 4 -> cloudinary setup 🟢
 
 
-nex ->🟢
+nex ->
 1 -> difrrent branch have a her own menue🟢
 
 2 -> craete Configs branch wise🟢
