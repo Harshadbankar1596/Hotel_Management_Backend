@@ -28,7 +28,10 @@ app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
     status: "healthy",
-    timestamp: new Date().toLocaleDateString() + " | " + new Date().toLocaleTimeString()
+    timestamp: new Date().toLocaleDateString() + " | " + new Date().toLocaleTimeString(),
+    PORT : process.env.PORT,
+    version : "v1",
+    mode : process.env.NODE_ENV
   });
 });
 

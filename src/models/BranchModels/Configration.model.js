@@ -27,7 +27,7 @@ const ConfigrationSchema = new mongoose.Schema({
     branchId : {
         type : mongoose.Schema.Types.ObjectId,
         required : true,
-        ref : "Branch"
+        ref : "HotelBranch"
     },
 
     taxes : [BranchTaxSchema]

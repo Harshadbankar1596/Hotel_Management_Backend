@@ -37,7 +37,7 @@ const BranchMenueController = {
       }
 
       const validItem = ValidateBody(
-        ["itemName", "description", "category", "type"],
+        ["itemName", "category", "type"],
         FoodItem,
       );
 
@@ -47,6 +47,18 @@ const BranchMenueController = {
 
       if (!["veg", "nonveg"].includes(FoodItem.type)) {
         return ResponseLog(res, 400, "Invalid Food Type");
+      }
+
+      const fullPrice = Number(FoodItem.prices?.fullPrice ?? 0);
+      const halfPrice = Number(FoodItem.prices?.halfPrice ?? 0);
+
+      if (
+        !Number.isFinite(fullPrice) ||
+        !Number.isFinite(halfPrice) ||
+        fullPrice < 0 ||
+        halfPrice < 0
+      ) {
+        return ResponseLog(res, 400, "Invalid Item Price");
       }
 
       const [hotelExists, branchExists] = await Promise.all([
@@ -65,48 +77,32 @@ const BranchMenueController = {
       if (req.file) {
         uploadedImage = await uploadToCloudinary(req.file, "menu-items");
       }
-
-
-      // remove  this condition in production
       if (uploadedImage?.public_id) {
         await deleteFromCloudinary(uploadedImage.public_id).catch(() => {});
       }
 
-
       const itemObj = {
+        hotelId,
+        branchId,
         itemName: FoodItem.itemName,
         prices: {
-          fullPrice: Number(FoodItem.prices?.fullPrice) || 0,
-          halfPrice: Number(FoodItem.prices?.halfPrice) || 0,
+          fullPrice,
+          halfPrice,
         },
-        description: FoodItem.description,
-        ItemImage: uploadedImage,
+        description: FoodItem.description || "",
+        itemImage: {
+          url: uploadedImage?.url || null,
+          public_id: uploadedImage?.public_id || null,
+        },
         category: FoodItem.category,
         type: FoodItem.type,
         isActive: FoodItem.isActive ?? true,
         isMainCourse: FoodItem.isMainCourse ?? false,
       };
 
-      await BranchMenuModel.findOneAndUpdate(
-        { hotelId, branchId },
-        {
-          $setOnInsert: {
-            hotelId,
-            branchId,
-          },
-          $push: {
-            FoodItems: itemObj,
-          },
-        },
-        {
-          upsert: true,
-          new: true,
-          runValidators: true,
-          setDefaultsOnInsert: true,
-        },
-      );
+      const newMenuItem = await BranchMenuModel.create(itemObj);
 
-      return SuccessLog(res, 201, "Menu Item Added Successfully");
+      return SuccessLog(res, 201, "Menu Item Added Successfully", newMenuItem);
     } catch (error) {
       if (uploadedImage?.public_id) {
         await deleteFromCloudinary(uploadedImage.public_id).catch(() => {});

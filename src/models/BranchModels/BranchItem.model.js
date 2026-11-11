@@ -1,7 +1,22 @@
+
 import mongoose from "mongoose";
 
-const ItemSchema = new mongoose.Schema(
+const BranchMenuSchema = new mongoose.Schema(
   {
+    hotelId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hotel",
+      required: true,
+      index: true,
+    },
+
+    branchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+      required: true,
+      index: true,
+    },
+
     itemName: {
       type: String,
       required: [true, "Item name is required"],
@@ -27,9 +42,15 @@ const ItemSchema = new mongoose.Schema(
       default: "",
     },
 
-    ItemImage : {
-        url : {type : String , default : null},
-        public_id : {type : String , default : null}
+    itemImage: {
+      url: {
+        type: String,
+        default: null,
+      },
+      public_id: {
+        type: String,
+        default: null,
+      },
     },
 
     category: {
@@ -47,6 +68,7 @@ const ItemSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true,
     },
 
     isMainCourse: {
@@ -57,32 +79,18 @@ const ItemSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const BranchItemSchema = new mongoose.Schema(
-  {
-    hotelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: [true, "Hotel is required"],
-      ref: "Hotel",
-      index: true,
-    },
+BranchMenuSchema.index({
+  hotelId: 1,
+  branchId: 1,
+  isActive: 1,
+});
 
-    branchId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: [true, "Branch is required"],
-      ref: "Branch",
-      index: true,
-    },
+BranchMenuSchema.index({
+  hotelId: 1,
+  branchId: 1,
+  category: 1,
+});
 
-    FoodItems: {
-      type: [ItemSchema],
-      default: [],
-    },
-  },
-  { timestamps: true }
-);
-
-BranchItemSchema.index({ hotelId: 1, branchId: 1 }, { unique: true });
-
-const BranchMenu = mongoose.model("BranchMenu", BranchItemSchema);
+const BranchMenu = mongoose.model("BranchMenu", BranchMenuSchema);
 
 export default BranchMenu;
