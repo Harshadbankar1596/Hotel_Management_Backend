@@ -1,0 +1,35 @@
+
+import mongoose from "mongoose";
+
+const SessionSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+
+    tokenHash: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    expiresAt: {
+      type: Date,
+      required: true,
+    },
+
+    revokedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+SessionSchema.index({ userId: 1 });
+SessionSchema.index({ expiresAt: 1 });
+
+export default mongoose.model("Session", SessionSchema);
