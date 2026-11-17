@@ -23,8 +23,7 @@ const OrderSchema = new mongoose.Schema(
     },
 
     orderNumber: {
-      type: String,
-      trim: true,
+      type: Number,
     },
 
     orderType: {
@@ -68,25 +67,8 @@ const OrderSchema = new mongoose.Schema(
       default: 0,
     },
 
-    deliveryCharge: {
-      type: Number,
-      min: 0,
-      default: 0,
-    },
 
     grandTotal: {
-      type: Number,
-      min: 0,
-      default: 0,
-    },
-
-    paidAmount: {
-      type: Number,
-      min: 0,
-      default: 0,
-    },
-
-    dueAmount: {
       type: Number,
       min: 0,
       default: 0,
@@ -124,17 +106,6 @@ const OrderSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    customerName: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    customerPhone: {
-      type: String,
-      trim: true,
-      default: "",
-    },
 
     notes: {
       type: String,

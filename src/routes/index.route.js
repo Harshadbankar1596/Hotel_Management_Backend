@@ -22,4 +22,5 @@ IndexRouter.use("/superadmin", AdminAuthRoute);
 
 IndexRouter.use("/user" , UserAuthRoute)
 
+
 export default IndexRouter;

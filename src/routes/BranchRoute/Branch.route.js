@@ -14,5 +14,6 @@ route.post("/create" , UserAuth , PermissionAuth , BranchController.CreateBranch
 route.use("/menue" , BranchMenueRoute)     
 route.use("/config" , BranchConfigRoute)
 route.use("/table" , BranchTableRoute)
+// route.use("/order")
 
 export default route
